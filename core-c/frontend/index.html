@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS Inventory Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
+            <div class="login-container">
+                <div class="login-box">
+                    <h1>NEXUS</h1>
+                    <p class="subtitle">Inventory Manager</p>
+                    
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="login-username" required placeholder="admin">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="login-password" required placeholder="admin123">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                    
+                    <div id="login-error" class="error-message"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div id="dashboard-screen" class="screen hidden">
+            <div class="main-layout">
+                <!-- Sidebar Overlay for mobile -->
+                <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+                
+                <!-- Navigation Sidebar -->
+                <nav id="sidebar" class="sidebar open">
+                    <button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="sidebar-brand">
+                        <h2>NEXUS</h2>
+                    </div>
+                    <ul class="sidebar-menu">
+                        <li><a href="#dashboard" onclick="switchTab('dashboard')">Dashboard</a></li>
+                        <li><a href="#inventory" onclick="switchTab('inventory')">Inventory</a></li>
+                        <li><a href="#users" onclick="switchTab('users')">Users</a></li>
+                        <li><a href="#issues" onclick="switchTab('issues')">Issues</a></li>
+                        <li><a href="#reports" onclick="switchTab('reports')">Reports</a></li>
+                        <li><a href="#backup" onclick="switchTab('backup')">Backup</a></li>
+                    </ul>
+                    <button class="btn btn-logout" onclick="logout()">Logout</button>
+                </nav>
+
+                <!-- Tab Content -->
+                <div class="container">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content">
+                    <h3>Dashboard</h3>
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h4>Total Items</h4>
+                            <p id="total-items" class="stat-number">0</p>
+                        </div>
+                        <div class="dashboard-card">
+                            <h4>Low Stock Items</h4>
+                            <p id="low-stock-items" class="stat-number warning">0</p>
+                        </div>
+                        <div class="dashboard-card">
+                            <h4>Active Issues</h4>
+                            <p id="active-issues" class="stat-number">0</p>
+                        </div>
+                        <div class="dashboard-card">
+                            <h4>Total Users</h4>
+                            <p id="total-users" class="stat-number">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Tab -->
+                <div id="inventory" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h3>Inventory Management</h3>
+                        <button class="btn btn-primary" onclick="openAddItemDialog()">+ Add Item</button>
+                    </div>
+                    
+                    <div class="search-bar">
+                        <input type="text" id="inventory-search" placeholder="Search by name or SKU...">
+                        <button class="btn" onclick="searchItems()">Search</button>
+                    </div>
+                    
+                    <table id="inventory-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Location</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-tbody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="users" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h3>User Management</h3>
+                        <button class="btn btn-primary" onclick="openAddUserDialog()">+ Add User</button>
+                    </div>
+                    
+                    <table id="users-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Issues Tab -->
+                <div id="issues" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h3>Item Issues & Returns</h3>
+                        <button class="btn btn-primary" onclick="openCreateIssueDialog()">+ New Issue</button>
+                    </div>
+                    
+                    <table id="issues-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Assignee</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Expected Return</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="issues-tbody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports" class="tab-content hidden">
+                    <h3>Reports & Analytics</h3>
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <h4>Inventory Summary</h4>
+                            <canvas id="inventory-chart"></canvas>
+                        </div>
+                        <div class="report-card">
+                            <h4>Stock Levels</h4>
+                            <canvas id="stock-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup Tab -->
+                <div id="backup" class="tab-content hidden">
+                    <h3>Backup & Restore</h3>
+                    <div class="backup-container">
+                        <div class="backup-card">
+                            <h4>💾 Create Backup</h4>
+                            <p>Download a complete backup of your inventory database.</p>
+                            <button class="btn btn-primary" onclick="createBackup()">Create Backup Now</button>
+                        </div>
+                        <div class="backup-card">
+                            <h4>📥 Restore Backup</h4>
+                            <p>Upload a previously saved backup file to restore your data.</p>
+                            <input type="file" id="backup-file" accept=".db" style="display:none;">
+                            <button class="btn btn-primary" onclick="document.getElementById('backup-file').click()">Select Backup File</button>
+                            <button class="btn" id="restore-btn" onclick="restoreBackup()" style="display:none;">Restore Selected File</button>
+                            <p id="backup-status" style="margin-top: 10px; color: #888;"></p>
+                        </div>
+                        <div class="backup-card">
+                            <h4>📊 Backup History</h4>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="backup-history">
+                                    <tr><td colspan="2">No backups yet</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dialogs -->
+    <div id="item-dialog" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDialog('item-dialog')">&times;</span>
+            <h3>Add/Edit Item</h3>
+            <form id="item-form">
+                <div class="form-group">
+                    <label>SKU</label>
+                    <input type="text" id="item-sku" required>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="item-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="item-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="item-quantity" required value="0">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Item</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="user-dialog" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDialog('user-dialog')">&times;</span>
+            <h3>Add User</h3>
+            <form id="user-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="user-username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="user-password" required>
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="user-fullname">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="user-email">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="user-role">
+                        <option value="viewer">Viewer</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Create User</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="issue-dialog" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDialog('issue-dialog')">&times;</span>
+            <h3>Create Issue</h3>
+            <form id="issue-form">
+                <div class="form-group">
+                    <label>Item</label>
+                    <select id="issue-item" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Assignee</label>
+                    <input type="text" id="issue-assignee" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="issue-quantity" required value="1">
+                </div>
+                <div class="form-group">
+                    <label>Purpose</label>
+                    <textarea id="issue-purpose"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Expected Return Date</label>
+                    <input type="date" id="issue-return-date">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Issue</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

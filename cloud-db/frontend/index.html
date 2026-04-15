@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NEXUS — Cloud Inventory Terminal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- 1. Google Identity Services (GIS) Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0e0e0e; color: #ffffff; }
+        .glass { background: rgba(26, 26, 26, 0.7); backdrop-filter: blur(8px); }
+        #login-screen { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; }
+        .btn-primary { background-color: #9cff93; color: #00440a; font-weight: 700; padding: 0.75rem 1.25rem; border-radius: 0.75rem; width: 100%; transition: all 0.2s; }
+        .btn-primary:hover { filter: brightness(1.1); }
+        #dashboard { display: none; }
+    </style>
+</head>
+<body class="antialiased overflow-hidden">
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="bg-[#0e0e0e]">
+    <div class="w-full max-w-md p-8">
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <span class="material-symbols-outlined text-[#00FF41] text-4xl" style="font-variation-settings: 'FILL' 1;">dataset</span>
+                <h1 class="text-[#00FF41] font-bold text-3xl tracking-widest uppercase">NEXUS</h1>
+            </div>
+            <p class="text-gray-400 text-sm">Cloud Terminal — Authentication Required</p>
+        </div>
+        
+        <div class="bg-[#1a1a1a] rounded-xl p-8 border border-white/5 shadow-2xl">
+            <div id="login-error" class="bg-red-900/20 text-red-400 text-xs p-3 rounded-lg mb-4 hidden border border-red-500/20"></div>
+            
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-6 text-center">Backend Verification via FastAPI</p>
+            
+            <!-- 2. Google Login Button Placeholder -->
+            <div id="google-login-btn-container" class="flex justify-center"></div>
+        </div>
+        
+        <p class="text-center text-[10px] text-gray-500 mt-8">v4.3.0-enterprise — Secure Connection Active</p>
+    </div>
+</div>
+
+<!-- MAIN DASHBOARD (Very minimal for this example) -->
+<div id="dashboard" class="h-screen flex">
+    <aside class="w-64 bg-[#0e0e0e] border-r border-white/5 p-6 flex flex-col">
+        <h2 class="text-[#00FF41] font-bold text-xl tracking-widest mb-10">NEXUS</h2>
+        <nav class="space-y-2 flex-1">
+            <div class="text-[#9cff93] bg-white/5 p-3 rounded-lg flex items-center gap-3">
+                <span class="material-symbols-outlined">inventory_2</span>
+                <span class="text-sm font-bold">Inventory</span>
+            </div>
+        </nav>
+        <div class="mt-auto border-t border-white/5 pt-4">
+            <p id="user-info" class="text-xs font-bold mb-2"></p>
+            <button id="logout-btn" class="text-xs text-red-400 hover:text-red-300">Logout</button>
+        </div>
+    </aside>
+    <main class="flex-1 p-10 overflow-y-auto bg-[#131313]">
+        <h1 class="text-2xl font-bold mb-6">Inventory Database</h1>
+        <div id="data-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Items will load here -->
+        </div>
+    </main>
+</div>
+
+<script>
+    // 3. Configuration
+    const GOOGLE_CLIENT_ID = "625531100694-3b393s08obidfv4ksm5cr6b2g33id5nn.apps.googleusercontent.com";
+    const FASTAPI_URL = "http://localhost:8000"; // Directly to FastAPI
+    const C_BACKEND_URL = "http://localhost:8080"; // For items data
+
+    // 4. Initialize Google Login
+    window.onload = function () {
+        console.log("DIAGNOSTIC: Current Origin:", window.location.origin);
+        console.log("DIAGNOSTIC: Using Client ID:", GOOGLE_CLIENT_ID);
+        
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+            context: 'signin',
+            ux_mode: 'popup',
+            itp_support: true
+        });
+        google.accounts.id.renderButton(
+            document.getElementById("google-login-btn-container"),
+            { theme: "filled_black", size: "large", text: "continue_with", shape: "pill", width: 280 }
+        );
+
+        // Check for existing session
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            loginSuccess(JSON.parse(localStorage.getItem('current_user')));
+        }
+    };
+
+    // 5. Handle Callback (Google Token -> FastAPI)
+    async function handleGoogleCredentialResponse(response) {
+        const errorEl = document.getElementById('login-error');
+        errorEl.classList.add('hidden');
+
+        try {
+            console.log("Verifying token with FastAPI...");
+            const res = await fetch(`${FASTAPI_URL}/api/auth/google/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: response.credential })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "FastAPI verification failed");
+            }
+
+            const data = await res.json();
+            console.log("Login verified!", data);
+
+            // Store token and user
+            localStorage.setItem('auth_token', data.token);
+            localStorage.setItem('current_user', JSON.stringify(data.user));
+            
+            loginSuccess(data.user);
+        } catch (err) {
+            console.error(err);
+            errorEl.textContent = `Error: ${err.message}`;
+            errorEl.classList.remove('hidden');
+        }
+    }
+
+    function loginSuccess(user) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'flex';
+        document.getElementById('user-info').textContent = `${user.full_name} (${user.role})`;
+        loadItems();
+    }
+
+    document.getElementById('logout-btn').onclick = () => {
+        localStorage.clear();
+        location.reload();
+    };
+
+    async function loadItems() {
+        const container = document.getElementById('data-container');
+        container.innerHTML = '<p class="text-xs text-gray-500">Querying Warehouse...</p>';
+        
+        try {
+            // C Backend requests still use the token
+            const res = await fetch(`${C_BACKEND_URL}/api/items`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+            });
+            const items = await res.json();
+            
+            container.innerHTML = items.map(item => `
+                <div class="bg-[#1a1a1a] p-5 rounded-xl border border-white/5 shadow-lg">
+                    <p class="text-[#9cff93] font-mono text-[10px] mb-1">${item.sku}</p>
+                    <h3 class="font-bold text-sm">${item.name}</h3>
+                    <div class="mt-4 flex justify-between items-center">
+                        <span class="text-xl font-bold">${item.quantity}</span>
+                        <span class="text-[10px] text-gray-500 uppercase">${item.location || 'Bin A-1'}</span>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            container.innerHTML = '<p class="text-red-400 text-xs">Failed to connect to Warehouse API.</p>';
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>NEXUS - NANO BANANA EDITION</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "banana": "#FFE135",
+                    "peel": "#1A1A1A",
+                    "pulp": "#FFFFFF",
+                    "stem": "#4CAF50",
+                    "bruise": "#BA1A1A"
+            },
+            "borderRadius": {
+                    "banana": "1.5rem"
+            },
+            "fontFamily": {
+                    "sans": ["Lexend", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+        body { 
+            font-family: 'Lexend', sans-serif; 
+            background-color: #FDF9E7;
+        }
+        
+        .brutalist-shadow {
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+            border: 2px solid #1A1A1A;
+        }
+        
+        .brutalist-shadow-sm {
+            box-shadow: 2px 2px 0px 0px #1A1A1A;
+            border: 2px solid #1A1A1A;
+        }
+        
+        .brutalist-card {
+            background-color: #FFFFFF;
+            border: 3px solid #1A1A1A;
+            box-shadow: 8px 8px 0px 0px #1A1A1A;
+            border-radius: 1.5rem;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        
+        .brutalist-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px 0px #1A1A1A;
+        }
+        
+        .brutalist-button {
+            background-color: #FFE135;
+            border: 2px solid #1A1A1A;
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+            border-radius: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: transform 0.05s, box-shadow 0.05s;
+        }
+        
+        .brutalist-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px #1A1A1A;
+        }
+        
+        .brutalist-button-secondary {
+            background-color: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+            border-radius: 1rem;
+            font-weight: 700;
+            transition: transform 0.05s, box-shadow 0.05s;
+        }
+        
+        .brutalist-button-secondary:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px #1A1A1A;
+        }
+
+        .brutalist-input {
+            border: 2px solid #1A1A1A;
+            box-shadow: 2px 2px 0px 0px #1A1A1A;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            outline: none;
+            transition: box-shadow 0.2s;
+        }
+        
+        .brutalist-input:focus {
+            box-shadow: 4px 4px 0px 0px #FFE135;
+            border-color: #1A1A1A;
+        }
+
+        .hidden { display: none !important; }
+        
+        /* Sidebar layout */
+        #sidebar { 
+            transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .sidebar-collapsed #sidebar { width: 100px; }
+        .sidebar-collapsed #main-content { margin-left: 100px; }
+        .sidebar-collapsed .nav-label, .sidebar-collapsed .sidebar-header-text { display: none; }
+        .sidebar-collapsed .nav-item { justify-content: center; padding: 1rem 0; }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 225, 53, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        /* Success/Error bubbles */
+        .success-message {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem 2rem;
+            border: 3px solid #1A1A1A;
+            box-shadow: 6px 6px 0px 0px #1A1A1A;
+            border-radius: 1rem;
+            font-weight: 700;
+        }
+
+        .error-message {
+            background-color: #BA1A1A;
+            color: white;
+            padding: 1rem 2rem;
+            border: 3px solid #1A1A1A;
+            box-shadow: 6px 6px 0px 0px #1A1A1A;
+            border-radius: 1rem;
+            font-weight: 700;
+            display: none;
+        }
+        .error-message.show { display: block; }
+        
+        .nav-item.active {
+            background-color: #FFE135;
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+        }
+
+        /* Enhanced Table Styles */
+        .brutalist-table {
+            border-collapse: separate;
+            border-spacing: 0 1rem;
+            width: 100%;
+        }
+        
+        .brutalist-table tr {
+            background-color: #FFFFFF;
+            transition: transform 0.1s;
+        }
+        
+        .brutalist-table tr:hover {
+            transform: scale(1.01);
+        }
+        
+        .brutalist-table td {
+            border-top: 3px solid #1A1A1A;
+            border-bottom: 3px solid #1A1A1A;
+            padding: 1.5rem 1rem;
+        }
+        
+        .brutalist-table td:first-child {
+            border-left: 3px solid #1A1A1A;
+            border-radius: 1.5rem 0 0 1.5rem;
+            padding-left: 2rem;
+        }
+        
+        .brutalist-table td:last-child {
+            border-right: 3px solid #1A1A1A;
+            border-radius: 0 1.5rem 1.5rem 0;
+            padding-right: 2rem;
+        }
+        
+        .qty-badge {
+            background-color: #FFE135;
+            border: 2px solid #1A1A1A;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 900;
+            box-shadow: 3px 3px 0px 0px #1A1A1A;
+            display: inline-block;
+        }
+        
+        .qty-low {
+            background-color: #BA1A1A;
+            color: #FFFFFF;
+        }
+        
+        .action-icon-btn {
+            padding: 0.5rem;
+            border: 2px solid #1A1A1A;
+            border-radius: 0.75rem;
+            background-color: #FFFFFF;
+            box-shadow: 2px 2px 0px 0px #1A1A1A;
+            transition: all 0.1s;
+        }
+        
+        .action-icon-btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 0px 0px 0px 0px #1A1A1A;
+        }
+        
+        .action-icon-btn.delete {
+            background-color: #BA1A1A;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body class="text-peel">
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+            <div class="brutalist-card max-w-md w-full p-10">
+                <div class="text-center mb-10">
+                    <div class="inline-block bg-banana p-4 rounded-full border-4 border-peel mb-4 animate-bounce">
+                        <span class="material-symbols-outlined text-5xl">bakery_dining</span>
+                    </div>
+                    <h1 class="text-5xl font-extrabold tracking-tighter mb-2 italic">NEXUS</h1>
+                    <p class="text-peel/60 font-bold uppercase tracking-widest text-xs">Nano Banana Edition</p>
+                </div>
+                
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-black uppercase mb-2">Who are you?</label>
+                        <input type="text" id="login-username" required class="brutalist-input w-full" placeholder="username">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-black uppercase mb-2">Secret Code</label>
+                        <input type="password" id="login-password" required class="brutalist-input w-full" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="brutalist-button w-full py-4 text-xl">Let's Go!</button>
+                </form>
+                
+                <div id="login-error" class="error-message mt-8 text-center"></div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Layout -->
+        <div id="dashboard-screen" class="hidden">
+            <!-- Header -->
+            <header class="fixed top-0 w-full z-40 bg-banana/90 backdrop-blur-sm flex justify-between items-center px-8 h-20 border-b-4 border-peel">
+                <div class="flex items-center gap-6">
+                    <button class="brutalist-button p-2" onclick="toggleSidebar()">
+                        <span class="material-symbols-outlined font-black">menu</span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-3xl font-black">bakery_dining</span>
+                        <span class="text-3xl font-black italic tracking-tighter">NEXUS</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="user-profile-summary" class="hidden md:flex items-center gap-3 px-4 py-2 bg-pulp border-2 border-peel rounded-full brutalist-shadow-sm">
+                        <span class="material-symbols-outlined font-black">face</span>
+                        <span id="current-username-display" class="font-black text-sm uppercase">Admin</span>
+                    </div>
+                    <button class="brutalist-button p-2 bg-pulp" onclick="logout()">
+                        <span class="material-symbols-outlined font-black">logout</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Sidebar -->
+            <aside class="fixed left-0 top-0 h-full w-72 bg-pulp border-r-4 border-peel z-30 flex flex-col pt-28 pb-10" id="sidebar">
+                <nav class="flex-1 space-y-4 px-4">
+                    <button onclick="switchTab('dashboard')" class="nav-item flex items-center w-full px-6 py-4 rounded-banana border-2 border-transparent transition-all hover:bg-banana/30" id="nav-dashboard">
+                        <span class="material-symbols-outlined mr-4 font-black">grid_view</span>
+                        <span class="nav-label font-black uppercase">Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('inventory')" class="nav-item flex items-center w-full px-6 py-4 rounded-banana border-2 border-transparent transition-all hover:bg-banana/30" id="nav-inventory">
+                        <span class="material-symbols-outlined mr-4 font-black">package_2</span>
+                        <span class="nav-label font-black uppercase">Stock</span>
+                    </button>
+                    <button onclick="switchTab('users')" class="nav-item flex items-center w-full px-6 py-4 rounded-banana border-2 border-transparent transition-all hover:bg-banana/30" id="nav-users">
+                        <span class="material-symbols-outlined mr-4 font-black">group</span>
+                        <span class="nav-label font-black uppercase">People</span>
+                    </button>
+                    <button onclick="switchTab('issues')" class="nav-item flex items-center w-full px-6 py-4 rounded-banana border-2 border-transparent transition-all hover:bg-banana/30" id="nav-issues">
+                        <span class="material-symbols-outlined mr-4 font-black">swap_horiz</span>
+                        <span class="nav-label font-black uppercase">Issues</span>
+                    </button>
+                    <button onclick="switchTab('reports')" class="nav-item flex items-center w-full px-6 py-4 rounded-banana border-2 border-transparent transition-all hover:bg-banana/30" id="nav-reports">
+                        <span class="material-symbols-outlined mr-4 font-black">monitoring</span>
+                        <span class="nav-label font-black uppercase">Stats</span>
+                    </button>
+                    <button onclick="switchTab('backup')" class="nav-item flex items-center w-full px-6 py-4 rounded-banana border-2 border-transparent transition-all hover:bg-banana/30" id="nav-backup">
+                        <span class="material-symbols-outlined mr-4 font-black">cloud_upload</span>
+                        <span class="nav-label font-black uppercase">Backup</span>
+                    </button>
+                </nav>
+                <div class="px-8 pt-8 border-t-2 border-peel/10">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-peel/40">Current Status</p>
+                    <p id="current-role-display" class="font-black text-stem uppercase text-sm">System Ready</p>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="ml-72 pt-32 px-10 pb-20 min-h-screen" id="main-content">
+                
+                <!-- Dashboard -->
+                <div id="dashboard" class="tab-content">
+                    <div class="flex items-end gap-4 mb-12">
+                        <h1 class="text-6xl font-black tracking-tighter italic">OVERVIEW</h1>
+                        <div class="h-2 w-24 bg-banana mb-3 brutalist-shadow-sm"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                        <div class="brutalist-card p-8 bg-pulp">
+                            <span class="material-symbols-outlined text-4xl mb-4 font-black text-peel">category</span>
+                            <h3 class="font-black uppercase text-xs tracking-widest text-peel/50 mb-1">Total Items</h3>
+                            <p id="total-items" class="text-5xl font-black tracking-tighter">0</p>
+                        </div>
+                        <div class="brutalist-card p-8 bg-banana">
+                            <span class="material-symbols-outlined text-4xl mb-4 font-black text-peel">error</span>
+                            <h3 class="font-black uppercase text-xs tracking-widest text-peel/50 mb-1">Low Stock</h3>
+                            <p id="low-stock-items" class="text-5xl font-black tracking-tighter">0</p>
+                        </div>
+                        <div class="brutalist-card p-8 bg-pulp">
+                            <span class="material-symbols-outlined text-4xl mb-4 font-black text-peel">sync</span>
+                            <h3 class="font-black uppercase text-xs tracking-widest text-peel/50 mb-1">Active Issues</h3>
+                            <p id="active-issues" class="text-5xl font-black tracking-tighter">0</p>
+                        </div>
+                        <div class="brutalist-card p-8 bg-pulp">
+                            <span class="material-symbols-outlined text-4xl mb-4 font-black text-peel">diversity_3</span>
+                            <h3 class="font-black uppercase text-xs tracking-widest text-peel/50 mb-1">Total Users</h3>
+                            <p id="total-users" class="text-5xl font-black tracking-tighter">0</p>
+                        </div>
+                    </div>
+                    <div class="brutalist-card p-8 bg-pulp max-w-4xl mb-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="material-symbols-outlined text-3xl font-black">smart_toy</span>
+                            <h2 class="text-3xl font-black italic uppercase">AI Alerts</h2>
+                            <span id="ai-alerts-model" class="text-xs font-black uppercase text-peel/30 ml-auto"></span>
+                        </div>
+                        <ul id="ai-alerts-list" class="space-y-4">
+                            <li class="font-black uppercase text-peel/30">Scanning inventory signals...</li>
+                        </ul>
+                    </div>
+                    <div class="brutalist-card p-8 bg-pulp max-w-4xl">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="material-symbols-outlined text-3xl font-black">analytics</span>
+                            <h2 class="text-3xl font-black italic uppercase">AI Insights</h2>
+                            <button onclick="loadAiInsights()" class="brutalist-button-secondary px-4 py-2 text-xs uppercase ml-auto">Refresh</button>
+                        </div>
+                        <div id="ai-insights-content" class="whitespace-pre-wrap font-bold text-sm leading-7 text-peel/80">
+                            Click Refresh to generate AI-powered inventory insights.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory -->
+                <div id="inventory" class="tab-content hidden">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                        <h1 class="text-6xl font-black tracking-tighter italic">STOCK ROOM</h1>
+                        <button onclick="openAddItemDialog()" class="brutalist-button px-8 py-4 flex items-center gap-3">
+                            <span class="material-symbols-outlined font-black">add_circle</span>
+                            New Entry
+                        </button>
+                    </div>
+
+                    <div class="mb-8">
+                        <div class="relative max-w-xl">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined font-black">search</span>
+                            <input id="inventory-search" onkeyup="searchItems()" class="brutalist-input w-full pl-12 bg-pulp" placeholder="Search the collection..." type="text"/>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto pb-8">
+                        <table class="brutalist-table">
+                            <thead>
+                                <tr class="bg-transparent text-peel text-sm uppercase font-black">
+                                    <th class="px-8 py-4 text-left">SKU / ID</th>
+                                    <th class="px-8 py-4 text-left">Item Name</th>
+                                    <th class="px-8 py-4 text-left">Condition</th>
+                                    <th class="px-8 py-4 text-center">Amount</th>
+                                    <th class="px-8 py-4 text-left">Stored At</th>
+                                    <th class="px-8 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-tbody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Users -->
+                <div id="users" class="tab-content hidden">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                        <h1 class="text-6xl font-black tracking-tighter italic">THE CREW</h1>
+                        <button onclick="openAddUserDialog()" class="brutalist-button px-8 py-4 flex items-center gap-3 bg-stem text-white shadow-peel">
+                            <span class="material-symbols-outlined font-black">person_add</span>
+                            Invite People
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto pb-8">
+                        <table class="brutalist-table">
+                            <thead>
+                                <tr class="bg-transparent text-peel text-sm uppercase font-black">
+                                    <th class="px-8 py-4 text-left">Handle</th>
+                                    <th class="px-8 py-4 text-left">Real Name</th>
+                                    <th class="px-8 py-4 text-left">Email</th>
+                                    <th class="px-8 py-4 text-left">Role</th>
+                                    <th class="px-8 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Issues -->
+                <div id="issues" class="tab-content hidden">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                        <h1 class="text-6xl font-black tracking-tighter italic">MOVEMENTS</h1>
+                        <button onclick="openCreateIssueDialog()" class="brutalist-button px-8 py-4 flex items-center gap-3 bg-banana">
+                            <span class="material-symbols-outlined font-black">outbound</span>
+                            Issue Items
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto pb-8">
+                        <table class="brutalist-table">
+                            <thead>
+                                <tr class="bg-transparent text-peel text-sm uppercase font-black">
+                                    <th class="px-8 py-4 text-left">Item</th>
+                                    <th class="px-8 py-4 text-left">Assignee</th>
+                                    <th class="px-8 py-4 text-center">Qty</th>
+                                    <th class="px-8 py-4 text-left">Status</th>
+                                    <th class="px-8 py-4 text-left">Return By</th>
+                                    <th class="px-8 py-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="issues-tbody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports -->
+                <div id="reports" class="tab-content hidden">
+                    <h1 class="text-6xl font-black tracking-tighter italic mb-12">DATA PULSE</h1>
+                    <div class="grid grid-cols-1 gap-10 mb-10">
+                        <div class="brutalist-card p-10 bg-banana">
+                            <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+                                <div>
+                                    <h4 class="text-2xl font-black mb-2 border-b-4 border-peel pb-2 inline-block uppercase">AI Report</h4>
+                                    <p class="font-bold">Generate a live ops summary from your inventory, users, and issue flow.</p>
+                                </div>
+                                <button id="ai-report-btn" onclick="generateAiReport()" class="brutalist-button px-8 py-4 bg-pulp shadow-peel">
+                                    Generate AI Report
+                                </button>
+                            </div>
+                            <div id="ai-report-output" class="min-h-40 whitespace-pre-wrap rounded-banana border-2 border-peel bg-pulp p-6 font-bold text-sm leading-7">
+                                AI report is standing by.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div class="brutalist-card p-10 bg-pulp">
+                            <h4 class="text-2xl font-black mb-8 border-b-4 border-banana pb-2 inline-block uppercase">Stock Mix</h4>
+                            <canvas id="inventory-chart"></canvas>
+                        </div>
+                        <div class="brutalist-card p-10 bg-pulp">
+                            <h4 class="text-2xl font-black mb-8 border-b-4 border-banana pb-2 inline-block uppercase">Level Check</h4>
+                            <canvas id="stock-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup -->
+                <div id="backup" class="tab-content hidden">
+                    <h1 class="text-6xl font-black tracking-tighter italic mb-12">THE VAULT</h1>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div class="space-y-8">
+                            <div class="brutalist-card p-10 bg-banana">
+                                <div class="flex items-center gap-6 mb-6">
+                                    <span class="material-symbols-outlined text-5xl font-black">save</span>
+                                    <h4 class="text-3xl font-black uppercase italic">Snap It!</h4>
+                                </div>
+                                <p class="font-bold mb-8">Save everything to a file right now.</p>
+                                <button onclick="createBackup()" class="brutalist-button w-full py-4 text-lg bg-pulp shadow-peel">Freeze Database</button>
+                            </div>
+                            
+                            <div class="brutalist-card p-10 bg-pulp">
+                                <div class="flex items-center gap-6 mb-6">
+                                    <span class="material-symbols-outlined text-5xl font-black">history</span>
+                                    <h4 class="text-3xl font-black uppercase italic">Go Back</h4>
+                                </div>
+                                <p class="font-bold mb-8">Restore from a previous backup file.</p>
+                                <input type="file" id="backup-file" accept=".db" class="hidden">
+                                <div class="space-y-4">
+                                    <button onclick="document.getElementById('backup-file').click()" class="brutalist-button-secondary w-full py-4 uppercase font-black">Pick File</button>
+                                    <p id="backup-status" class="text-center font-black text-sm uppercase"></p>
+                                    <button id="restore-btn" onclick="restoreBackup()" class="hidden brutalist-button w-full py-4 bg-bruise text-white uppercase shadow-peel">Re-Write Reality</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="brutalist-card p-10 bg-pulp">
+                            <h4 class="text-2xl font-black mb-8 uppercase italic border-b-4 border-peel inline-block">History Log</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="text-peel/40 text-xs uppercase font-black border-b-2 border-peel/5">
+                                            <th class="pb-4">When</th>
+                                            <th class="pb-4">What</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="backup-history" class="divide-y-2 divide-peel/5">
+                                        <tr><td colspan="2" class="py-6 text-center font-black text-peel/20 uppercase">Nothing yet</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="item-dialog" class="modal hidden">
+        <div class="brutalist-card bg-pulp p-10 max-w-lg w-full">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-3xl font-black italic uppercase">Add Gear</h3>
+                <button onclick="closeDialog('item-dialog')" class="brutalist-button-secondary p-2 rounded-full">
+                    <span class="material-symbols-outlined font-black">close</span>
+                </button>
+            </div>
+            <form id="item-form" class="space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-black uppercase mb-2">Unique SKU</label>
+                        <input type="text" id="item-sku" required class="brutalist-input w-full" placeholder="SKU-XXX">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase mb-2">Display Name</label>
+                        <input type="text" id="item-name" required class="brutalist-input w-full" placeholder="Name">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">What is it?</label>
+                    <textarea id="item-description" class="brutalist-input w-full h-24" placeholder="Describe the item..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">Condition</label>
+                    <select id="item-condition" class="brutalist-input w-full bg-pulp appearance-none">
+                        <option value="Working">Working</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Under Repair">Under Repair</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">In Stock</label>
+                    <input type="number" id="item-quantity" required value="0" class="brutalist-input w-full">
+                </div>
+                <button type="submit" class="brutalist-button w-full py-4 text-xl bg-banana">Save Record</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="ai-chat-widget" class="fixed bottom-6 right-6 z-[120] w-[22rem]">
+        <div class="brutalist-card bg-pulp p-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined font-black">forum</span>
+                    <h3 class="font-black uppercase">AI Support</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="ai-chat-model-badge" class="text-[10px] font-black uppercase text-peel/30"></span>
+                    <button onclick="toggleAiChat()" class="brutalist-button-secondary px-3 py-1 text-xs">Toggle</button>
+                </div>
+            </div>
+            <div id="ai-chat-body">
+                <div id="ai-chat-messages" class="h-72 overflow-y-auto space-y-3 mb-4 pr-1">
+                    <div class="border-2 border-peel rounded-banana p-3 bg-banana font-bold text-sm">
+                        👋 Hi! Ask me anything about your inventory — stock levels, damaged items, or overdue returns.
+                    </div>
+                </div>
+                <form id="ai-chat-form" class="flex gap-2">
+                    <input id="ai-chat-input" type="text" class="brutalist-input flex-1" placeholder="Ask support AI...">
+                    <button type="submit" class="brutalist-button px-4 py-3 text-sm">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="user-dialog" class="modal hidden">
+        <div class="brutalist-card bg-pulp p-10 max-w-lg w-full">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-3xl font-black italic uppercase">New Member</h3>
+                <button onclick="closeDialog('user-dialog')" class="brutalist-button-secondary p-2 rounded-full">
+                    <span class="material-symbols-outlined font-black">close</span>
+                </button>
+            </div>
+            <form id="user-form" class="space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-black uppercase mb-2">Handle</label>
+                        <input type="text" id="user-username" required class="brutalist-input w-full">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase mb-2">Pass</label>
+                        <input type="password" id="user-password" required class="brutalist-input w-full">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">Full Name</label>
+                    <input type="text" id="user-fullname" class="brutalist-input w-full">
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">Role in System</label>
+                    <select id="user-role" class="brutalist-input w-full bg-pulp appearance-none">
+                        <option value="viewer">Viewer</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <button type="submit" class="brutalist-button w-full py-4 text-xl bg-stem text-white">Init Member</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="issue-dialog" class="modal hidden">
+        <div class="brutalist-card bg-pulp p-10 max-w-lg w-full">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-3xl font-black italic uppercase">Release Gear</h3>
+                <button onclick="closeDialog('issue-dialog')" class="brutalist-button-secondary p-2 rounded-full">
+                    <span class="material-symbols-outlined font-black">close</span>
+                </button>
+            </div>
+            <form id="issue-form" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">Item</label>
+                    <select id="issue-item" required class="brutalist-input w-full bg-pulp appearance-none"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">Assign To</label>
+                    <input type="text" id="issue-assignee" required class="brutalist-input w-full" placeholder="Crew Member Name">
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-black uppercase mb-2">Issued On</label>
+                        <input type="date" id="issue-date" class="brutalist-input w-full">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase mb-2">Quantity</label>
+                        <input type="number" id="issue-quantity" required value="1" class="brutalist-input w-full">
+                    </div>
+                </div>
+                <div>
+                        <label class="block text-xs font-black uppercase mb-2">Back By</label>
+                        <input type="date" id="issue-return-date" class="brutalist-input w-full">
+                </div>
+                <button type="submit" class="brutalist-button w-full py-4 text-xl bg-banana">Process Issue</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // UI Helpers
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+        }
+
+        // Initialize UI
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.innerWidth < 1200) {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        });
+        
+        // Wrap original app functions for visual enhancements
+        const originalSwitchTab = window.switchTab;
+        window.switchTab = function(tabName) {
+            if (typeof originalSwitchTab === 'function') originalSwitchTab(tabName);
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const activeNav = document.getElementById('nav-' + tabName);
+            if (activeNav) activeNav.classList.add('active');
+            
+            if (window.innerWidth < 1200) document.body.classList.add('sidebar-collapsed');
+        };
+        
+        const originalLoginSuccess = window.loginSuccess;
+        window.loginSuccess = function(user, token) {
+            if (typeof originalLoginSuccess === 'function') originalLoginSuccess(user, token);
+            
+            const usernameDisplay = document.getElementById('current-username-display');
+            const roleDisplay = document.getElementById('current-role-display');
+            
+            if (usernameDisplay) usernameDisplay.textContent = user.username;
+            if (roleDisplay) roleDisplay.textContent = user.role.toUpperCase() + " ACTIVE";
+            
+            document.getElementById('user-profile-summary').classList.remove('hidden');
+            window.switchTab('dashboard');
+        };
+
+        // Modify Chart.js defaults for Brutalist style
+        Chart.defaults.font.family = "'Lexend', sans-serif";
+        Chart.defaults.font.weight = 'bold';
+        Chart.defaults.color = '#1A1A1A';
+    </script>
+</body>
+</html>

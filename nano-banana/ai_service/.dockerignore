@@ -1,0 +1,26 @@
+# ── AI Service build context ──
+.git
+.gitignore
+.codex
+.qwen/
+*.db
+*-wal
+*-shm
+nexus_backup_*.db
+nexus_server
+*.o
+build/
+cmake-build-*/
+data/
+data-doc-test/
+src/
+include/
+frontend/
+*.md
+!README.md
+backend/
+docker-compose.yml
+docker-entrypoint*.sh
+Dockerfile
+.dockerignore
+.env

@@ -1,0 +1,27 @@
+# ── Frontend build context ──
+.git
+.gitignore
+.codex
+.qwen/
+*.db
+*-wal
+*-shm
+nexus_backup_*.db
+nexus_server
+*.o
+build/
+cmake-build-*/
+data/
+data-doc-test/
+src/
+include/
+ai_service/
+backend/
+*.md
+!README.md
+docker-compose.yml
+docker-entrypoint*.sh
+Dockerfile
+.dockerignore
+*.py
+requirements.txt

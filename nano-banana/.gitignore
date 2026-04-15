@@ -1,0 +1,17 @@
+.codex
+*.o
+*.db
+*-wal
+*-shm
+nexus_backup_*.db
+nexus_server
+build/
+cmake-build-*/
+ai_service/.env
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.qwen/
+gha-creds-*.json

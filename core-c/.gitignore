@@ -1,0 +1,13 @@
+*.o
+nexus_server
+nexus_data.db
+nexus_data.db-shm
+nexus_data.db-wal
+*.swp
+*.swo
+*~
+.DS_Store
+node_modules/
+build/
+dist/
+*.log

@@ -1,0 +1,120 @@
+# ──────────────────────────────────────────────────────────
+# NEXUS Inventory Management System — Docker Compose
+#
+# Usage:
+#   docker compose up --build
+#
+# Requires a .env file in the project root.
+# Copy .env.example to .env and fill in your values.
+# ──────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: nexus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nexus_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-nexus_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - nexus-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexus_app} -d ${POSTGRES_DB:-nexus_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ──────────────────────────────────────────────────────
+  # Python AI Service — starts first, no dependencies
+  # ──────────────────────────────────────────────────────
+  ai-service:
+    build:
+      context: .
+      dockerfile: ai_service/Dockerfile
+    container_name: nexus-ai-service
+    restart: unless-stopped
+    ports:
+      - "${AI_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    networks:
+      - nexus-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ──────────────────────────────────────────────────────
+  # C Backend Server — depends on AI service
+  # ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: nexus-backend
+    restart: unless-stopped
+    ports:
+      - "${NEXUS_PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      - APP_USERNAME=${APP_USERNAME}
+      - APP_PASSWORD=${APP_PASSWORD}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - NEXUS_PORT=${NEXUS_PORT:-8080}
+      - POSTGRES_CONNECTION_STRING=postgresql://${POSTGRES_USER:-nexus_app}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-nexus_db}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/auth/oauth/callback}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-http://localhost:8080}
+      - JWT_SECRET=${JWT_SECRET:-}
+      - JWT_EXPIRATION_SECONDS=${JWT_EXPIRATION_SECONDS:-86400}
+      - AI_SERVICE_URL=http://ai-service:8000
+      - NEXUS_INIT_USERNAME=${APP_USERNAME:-}
+      - NEXUS_INIT_PASSWORD=${APP_PASSWORD:-}
+      - NEXUS_INIT_FULLNAME=${NEXUS_INIT_FULLNAME:-Administrator}
+      - NEXUS_INIT_EMAIL=${NEXUS_INIT_EMAIL:-}
+    depends_on:
+      ai-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - nexus-net
+
+  # ──────────────────────────────────────────────────────
+  # Frontend (Nginx) — optional, for separate port access
+  # ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: nexus-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - nexus-net
+    profiles:
+      - frontend   # only starts with: docker compose --profile frontend up
+
+# ──────────────────────────────────────────────────────
+# Network & Volumes
+# ──────────────────────────────────────────────────────
+networks:
+  nexus-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

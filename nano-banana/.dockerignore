@@ -1,0 +1,10 @@
+.git
+.codex
+nexus_server
+src/*.o
+build
+cmake-build-*
+*.db
+*-wal
+*-shm
+nexus_backup_*.db

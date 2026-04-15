@@ -1,0 +1,5 @@
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) UNIQUE;
+
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS oauth_provider VARCHAR(32) DEFAULT 'google';
